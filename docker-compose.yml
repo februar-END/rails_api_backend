@@ -1,0 +1,28 @@
+version: "3.9"
+services:
+  profile_app:
+    build: .
+    container_name: profile_app
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3010 -b '0.0.0.0'"
+    volumes:
+      - .:/profile_app
+    ports:
+      - "3010:3010"
+    env_file:
+      - .env
+    depends_on:
+      - profile_app_db
+    
+  profile_app_db:
+    image: mysql:8.0.27
+    container_name: profile_app_db
+    environment:
+      TZ: Asia/Tokyo
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - profile_app_db:/var/lib/mysql
+
+volumes:
+  profile_app_db:

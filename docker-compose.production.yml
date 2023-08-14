@@ -1,0 +1,47 @@
+version: "3.9"
+services:
+  profile_app:
+    build: .
+    container_name: profile_app
+    command: bundle exec puma -C config/puma.rb
+    volumes:
+      - .:/profile_app
+      - public-data:/profile_app/public
+      - tmp-data:/profile_app/tmp
+      - log-data:/profile_app/log
+      - /profile_app/node_modules
+    env_file:
+      - .env
+    depends_on:
+      - profile_app_db
+
+  profile_app_db:
+    image: mysql:8.0.27
+    container_name: profile_app_db
+    environment:
+      TZ: Asia/Tokyo
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - profile_app_db:/var/lib/mysql
+  
+  profile_web:
+    build:
+      context: prd/nginx
+    volumes:
+      - public-data:/profile_app/public
+      - tmp-data:/profile_app/tmp
+    ports:
+      - 80:80
+    depends_on:
+      - profile_app
+
+volumes:
+  profile_app_db:
+    driver: local
+  bundle:
+    driver: local
+  public-data:
+  tmp-data:
+  log-data:
